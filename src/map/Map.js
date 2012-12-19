@@ -117,8 +117,11 @@ L.Map = L.Class.extend({
 		var viewBounds = this.getBounds(),
 		    viewSw = this.project(viewBounds.getSouthWest()),
 		    viewNe = this.project(viewBounds.getNorthEast()),
+		    viewC = this.project(viewBounds.getCenter()),
+		    viewSize = this.getSize(),
 		    sw = this.project(bounds.getSouthWest()),
 		    ne = this.project(bounds.getNorthEast()),
+		    c = this.project(bounds.getCenter()),
 		    dx = 0,
 		    dy = 0;
 
@@ -133,6 +136,18 @@ L.Map = L.Class.extend({
 		}
 		if (viewSw.x < sw.x) { // west
 			dx = sw.x - viewSw.x;
+		}
+
+		if (viewSize.x > ne.x - sw.x && (viewSw.x < sw.x && viewNe.x > ne.x ||
+			viewSw.x < sw.x && viewNe.x < ne.x ||
+			viewSw.x > sw.x && viewNe.x > ne.x)) {
+			dx = c.x - viewC.x;
+		}
+
+		if (viewSize.y > sw.y - ne.y && (viewNe.y < ne.y && viewSw.y > sw.y ||
+			viewNe.y < ne.y && viewSw.y < sw.y ||
+			viewNe.y > ne.y && viewSw.y > sw.y)) {
+			dy = c.y - viewC.y;
 		}
 
 		return this.panBy(new L.Point(dx, dy, true));
@@ -298,7 +313,7 @@ L.Map = L.Class.extend({
 			if (!inside) {
 				zoomNotFound = boundsSize.x <= size.x && boundsSize.y <= size.y;
 			} else {
-				zoomNotFound = boundsSize.x < size.x || boundsSize.y < size.y;
+				zoomNotFound = boundsSize.x < size.x && boundsSize.y < size.y;
 			}
 		} while (zoomNotFound && zoom <= maxZoom);
 
